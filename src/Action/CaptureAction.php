@@ -76,8 +76,8 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface, Gateway
         $details = $this->addNotificationUrl($token, $details);
 
         $details['hosted_payment'] = [
-            'return_url' => $token->getAfterUrl(),
-            'cancel_url' => $token->getTargetUrl() . '?&' . http_build_query(['status' => PayPlugApiClientInterface::STATUS_CANCELED]),
+            'return_url' => rtrim('http://697804e319f7.ngrok.io',"/"),
+            'cancel_url' => rtrim('http://697804e319f7.ngrok.io',"/") . '?&' . http_build_query(['status' => PayPlugApiClientInterface::STATUS_CANCELED]),
         ];
 
         $payment = $this->createPayment($details);
@@ -104,6 +104,13 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface, Gateway
         $notifyToken = $this->tokenFactory->createNotifyToken($token->getGatewayName(), $token->getDetails());
 
         $notificationUrl = $notifyToken->getTargetUrl();
+
+        // @TODO : NE PAS COMMIT
+        $notificationUrl = sprintf(
+            '%s%s',
+            rtrim('http://697804e319f7.ngrok.io',"/"),
+            parse_url($notificationUrl, PHP_URL_PATH)
+        );
 
         $details['notification_url'] = $notificationUrl;
 

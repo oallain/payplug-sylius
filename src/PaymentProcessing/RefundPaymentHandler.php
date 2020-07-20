@@ -75,6 +75,18 @@ final class RefundPaymentHandler implements RefundPaymentHandlerInterface
             throw new InvalidRefundAmountException();
         }
 
+        $details = $payment->getDetails();
+        $refunds = $details['refunds'] ?? [];
+        $refunds[] = [
+            'internal_id' => $refund,
+            'id' => $refund->id,
+            'amount' => $refund->amount,
+            'meta_data' => $refund->metadata,
+        ];
+        $details['refunds'] = $refunds;
+        $payment->setDetails($details);
+        dump($payment->getDetails());
+
         return new RefundUnits(
             $payment->getOrder()->getNumber(),
             $this->parseIdsToUnitRefunds($items, RefundType::orderItemUnit(), OrderItemUnitRefund::class),

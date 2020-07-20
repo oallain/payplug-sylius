@@ -58,13 +58,22 @@ final class RefundPaymentProcessor implements PaymentProcessorInterface
         }
     }
 
-    public function processWithAmount(PaymentInterface $payment, int $amount): void
+    public function processWithAmount(PaymentInterface $payment, int $amount, int $refundId): void
     {
         $this->prepare($payment);
         $details = $payment->getDetails();
 
         try {
-            $this->payPlugApiClient->refundPaymentWithAmount($details['payment_id'], $amount);
+            $refund = $this->payPlugApiClient->refundPaymentWithAmount($details['payment_id'], $amount, $refundId);
+            $refunds = $details['refunds'] ?? [];
+            $refunds[] = [
+                'internal_id' => $refundId,
+                'id' => $refund->id,
+                'amount' => $refund->amount,
+                'meta_data' => $refund->metadata,
+            ];
+            $details['refunds'] = $refunds;
+            $payment->setDetails($details);
         } catch (\Exception $exception) {
             $message = $exception->getMessage();
 

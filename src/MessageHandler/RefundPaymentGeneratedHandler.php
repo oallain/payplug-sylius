@@ -62,7 +62,19 @@ final class RefundPaymentGeneratedHandler
                 return;
             }
 
-            $this->refundPaymentProcessor->processWithAmount($payment, $message->amount());
+            if(!isset($payment->getDetails()['refunds'])) {
+                $details = $payment->getDetails();
+                $details['refunds'] = [];
+                $payment->setDetails($details);
+            }
+
+            foreach($payment->getDetails()['refunds'] as $refund) {
+                if($message->id() === $refund['internal_id']) {
+                    return;
+                }
+            }
+
+            $this->refundPaymentProcessor->processWithAmount($payment, $message->amount(), $message->id());
 
             /** @var RefundPayment $refundPayment */
             $refundPayment = $this->entityManager->getRepository(RefundPayment::class)->find($message->id());

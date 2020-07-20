@@ -51,7 +51,19 @@ final class NotifyAction implements ActionInterface, ApiAwareInterface, GatewayA
                 return;
             }
 
+
             if ($resource instanceof \Payplug\Resource\Refund) {
+                try {
+                    /** @var \Payplug\Resource\Refund $resource */
+                    $metadata = $resource->metadata;
+
+                    if (isset($metadata['refund_from_sylius'])) {
+                        return;
+                    }
+                } catch (\Payplug\Exception\UndefinedAttributeException $exception) {
+                    return;
+                }
+
                 $details['status'] = PayPlugApiClientInterface::REFUNDED;
                 $this->refundPaymentHandler->handle($resource, $request->getFirstModel());
 
